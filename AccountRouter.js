@@ -16,21 +16,30 @@ router.get('/', (req, res) =>{
 
 router.post('/', (req, res) =>{
   const accountData = req.body;
-  db('accounts')
-  .insert(accountData, 'id')
-  .then(account =>{
-    res.status(200).json(account)
-  })
-  .catch(err =>{
-    res.status(500).json(err)
-  })
+  if (!accountData.name || !accountData.budget){
+    res.status(400).json({message: "Please provide name and budget for account"})
+  } else {
+    db('accounts')
+    .insert(accountData, 'id')
+    .then(account =>{
+      res.status(200).json(account)
+    })
+    .catch(err =>{
+      res.status(500).json(err)
+    })
+  }
 });
 
 router.get('/:id', (req, res) =>{
   db('accounts')
   .where({id: req.params.id})
   .then(account =>{
-    res.status(200).json(account)
+    if (account[0]){
+      res.status(200).json(account) 
+    } else {
+      res.status(404).json({message: "The account with the specified ID does not exist"})
+    }
+    
   })
   .catch(err =>{
     res.status(500).json(err)
@@ -42,7 +51,11 @@ router.put('/:id', (req, res) =>{
   .where({id: req.params.id})
   .update(req.body)
   .then(account =>{
-    res.status(200).json(account)
+    if (account) {
+      res.status(200).json(account)
+    } else {
+      res.status(404).json({message: "The account with the specified ID does not exist"})
+    } 
   })
   .catch(err =>{
     res.status(500).json(err)
@@ -54,7 +67,11 @@ router.delete('/:id', (req, res) =>{
   .where({id: req.params.id})
   .del()
   .then(account =>{
-    res.status(200).json(account)
+    if (account){
+      res.status(200).json(account)
+    } else {
+      res.status(404).json({message: "The account with the specified ID does not exist."})
+    } 
   })
   .catch(err =>{
     res.status(500).json(err)
